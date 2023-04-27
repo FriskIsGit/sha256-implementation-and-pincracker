@@ -8,8 +8,8 @@ class CrackheadRunner{
         benchmarkCracker(5,34679);
         benchmarkCracker(6,824737);
     }
-    static void benchmarkCracker(int len, int target){
-        PinCracker cracker = new PinCracker(len,HashingAlg.encryptHash(String.valueOf(target)));
+    private static void benchmarkCracker(int len, int target){
+        PinCracker cracker = new PinCracker(len, SHA256.hashString(String.valueOf(target)));
         long st = System.currentTimeMillis();
         String result = cracker.seek();
         long en = System.currentTimeMillis();

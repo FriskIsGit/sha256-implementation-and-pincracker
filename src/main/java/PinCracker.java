@@ -11,7 +11,7 @@ class PinCracker{
         final int TIMES = (int) Math.pow(10,length);
         int num = 0;
         for(int i = 0; i<TIMES; i++){
-            if(HashingAlg.encryptHash(pad(num)).equals(target)){
+            if(SHA256.hashString(pad(num)).equals(target)){
                 return pad(num);
             }
             num++;

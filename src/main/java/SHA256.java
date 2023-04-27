@@ -5,7 +5,7 @@ import java.util.ArrayList;
  * @SHA-256
  *
  */
-public class HashingAlg {
+public class SHA256{
     final static BigInteger[] BIG_HASHES_8 = new BigInteger[]{
             new BigInteger("1779033703"),
             new BigInteger("3144134277"),
@@ -15,7 +15,8 @@ public class HashingAlg {
             new BigInteger("2600822924"),
             new BigInteger("528734635"),
             new BigInteger("1541459225")};
-    final static BigInteger [] BIG_HASHES_64 = new BigInteger[]{new BigInteger("1116352408"),
+    final static BigInteger[] BIG_HASHES_64 = new BigInteger[]{
+            new BigInteger("1116352408"),
             new BigInteger("1899447441"),
             new BigInteger("3049323471"),
             new BigInteger("3921009573"),
@@ -147,13 +148,8 @@ public class HashingAlg {
                     "bef9a3f7",
                     "c67178f2",
     };
-    public static void main(String[] args) {
-        //String str = "hello world"; //b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9
-        String str = "password12345678";
-        System.out.println(encryptHash(str));
 
-    }
-    protected static String encryptHash(String str){
+    public static String hashString(String str){
         //STEP_2,3 initialize hashes h0-h7
 
         ArrayList<String> bitList = new ArrayList<>();
@@ -161,7 +157,7 @@ public class HashingAlg {
         //STEP_1
         for(int i =0; i<str.length();i++){
             StringBuilder currentString = new StringBuilder(getBinary(str.charAt(i)));
-            for(int j = currentString.length();j<8;j++){
+            for(int j = currentString.length(); j<8; j++){
                 currentString.insert(0, "0");
             }
             bitList.add(currentString.toString());
@@ -187,7 +183,7 @@ public class HashingAlg {
         }
         //streamBitList(bitList);
         //STEP_5 turn each entry into 32-bit words
-        BigInteger [] w = new BigInteger[64];
+        BigInteger[] w = new BigInteger[64];
         //System.out.println("size of bitlist: " + bitList.size());
 
         for(int elArr = 0, elList=0; elList<=bitList.size()-4;elArr++,elList=elList+4){
@@ -201,9 +197,16 @@ public class HashingAlg {
         //modify array
         BigInteger maxU32 = new BigInteger("4294967295");
         for(int i = 16; i<w.length;i++){
-            BigInteger s0 = rotate_Right(w[i-15],7).xor(rotate_Right(w[i-15],18)).xor(w[i-15].shiftRight(3));
-            BigInteger s1 = rotate_Right(w[i-2],17).xor(rotate_Right(w[i-2],19)).xor(w[i-2].shiftRight(10));
-            w[i] = (w[i-16].add(s0).and(maxU32).add(w[i-7]).and(maxU32).add(s1).and(maxU32));
+            BigInteger s0 = rotate_Right(w[i-15],7)
+                    .xor(rotate_Right(w[i-15],18))
+                    .xor(w[i-15].shiftRight(3));
+            BigInteger s1 = rotate_Right(w[i - 2], 17)
+                    .xor(rotate_Right(w[i - 2], 19))
+                    .xor(w[i - 2].shiftRight(10));
+            w[i] = w[i-16]
+                    .add(s0).and(maxU32)
+                    .add(w[i-7]).and(maxU32)
+                    .add(s1).and(maxU32);
             //streamArray(w);
         }
         //streamArray(w);
@@ -223,9 +226,17 @@ public class HashingAlg {
             //bitflip for ~e
             //BigInteger flippedE = flipBits(e);
             BigInteger ch = (e.and(f)).xor((bit_not_string(e)).and(g));
-            BigInteger temp1 = h.add(S1).and(maxU32).add(ch).and(maxU32).add(BIG_HASHES_64[i]).and(maxU32).add(w[i]).and(maxU32);
-            BigInteger S0 = rotate_Right(a,2).xor(rotate_Right(a,13)).xor(rotate_Right(a,22));
-            BigInteger maj = (a.and(b)).xor(a.and(c)).xor(b.and(c));
+            BigInteger temp1 = h
+                    .add(S1).and(maxU32)
+                    .add(ch).and(maxU32)
+                    .add(BIG_HASHES_64[i]).and(maxU32)
+                    .add(w[i]).and(maxU32);
+            BigInteger S0 = rotate_Right(a,2)
+                    .xor(rotate_Right(a,13))
+                    .xor(rotate_Right(a,22));
+            BigInteger maj = (a.and(b))
+                    .xor(a.and(c))
+                    .xor(b.and(c));
             BigInteger temp2 = S0.add(maj).and(maxU32);
             h = g;
             g = f;
@@ -256,7 +267,7 @@ public class HashingAlg {
     }
 
     private static BigInteger flipBits(BigInteger e) {
-        char [] arr = e.toString(2).toCharArray();
+        char[] arr = e.toString(2).toCharArray();
         for(int i = 0; i<arr.length;i++){
             if(arr[i]=='0') arr[i]='1';
             else{
@@ -296,12 +307,9 @@ public class HashingAlg {
         // append 1's to the front until total length of the string is 32
         // return string
 
-        char [] arr = num.toString(2).toCharArray();
-        for(int i = 0; i<arr.length;i++){
-            if(arr[i]=='0') arr[i]='1';
-            else{
-                arr[i]='0';
-            }
+        char[] arr = num.toString(2).toCharArray();
+        for(int i = 0; i<arr.length; i++){
+            arr[i] = arr[i] == '0' ? '1': '0';
         }
         StringBuilder slice = new StringBuilder(new String(arr));
         while(slice.length()<32){
@@ -313,7 +321,7 @@ public class HashingAlg {
         // 111111111111111111111 010
     }
 
-    private static void streamArray(BigInteger [] arr){
+    private static void streamArray(BigInteger[] arr){
         for(int entry = 0; entry<arr.length;entry++){
             if(entry%2==0) System.out.println();
             System.out.print(arr[entry] + " ");
@@ -334,14 +342,13 @@ public class HashingAlg {
     }
 
     private static String getBinary(long number){
-        StringBuilder binaryString = new StringBuilder("");
+        StringBuilder binaryString = new StringBuilder();
         while(true){
             binaryString.append(number%2);
-            if (number/2==0) break;
+            if (number/2==0)
+                break;
             number = number/2;
         }
         return binaryString.reverse().toString();
     }
-
-
 }
